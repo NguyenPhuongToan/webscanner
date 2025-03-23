@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Vulnerability Scanner</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f4f4f4;
+            margin: 50px;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+            margin: auto;
+        }
+        input, button {
+            width: 80%;
+            padding: 10px;
+            margin: 10px 0;
+            font-size: 16px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        button {
+            background-color: #28a745;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #ffeb3b;
+            border-radius: 5px;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Web Vulnerability Scanner</h2>
+        <input type="text" id="url" placeholder="Enter URL to scan">
+        <button onclick="scanWebsite()">Scan</button>
+        <div id="result" class="result" style="display:none;"></div>
+    </div>
+
+    <script>
+        function isValidURL(url) {
+            const pattern = /^(https?:\/\/)?([a-zA-Z0-9.-]+)\.([a-zA-Z]{2,})(\/\S*)?$/;
+            return pattern.test(url);
+        }
+
+        async function scanWebsite() {
+            const url = document.getElementById("url").value.trim();
+            if (!isValidURL(url)) {
+                alert("Please enter a valid URL");
+                return;
+            }
+            
+            try {
+                const response = await fetch("http://127.0.0.1:5000/scan", {  // Changed to HTTP
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ url })
+                });
+
+                if (!response.ok) throw new Error(`Server Error: ${response.status}`);
+
+                const data = await response.json();
+                const resultDiv = document.getElementById("result");
+                resultDiv.style.display = "block";
+                resultDiv.innerHTML = `<strong>Scan Results for: ${data.url}</strong><br>` + 
+                                      (data.vulnerabilities.length ? data.vulnerabilities.join("<br>") : "No vulnerabilities found!");
+
+            } catch (error) {
+                alert("Failed to fetch scan results. Check the server and try again.");
+                console.error("Error:", error);
+            }
+        }
+    </script>
+</body>
+</html>
